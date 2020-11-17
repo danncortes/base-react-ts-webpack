@@ -3,10 +3,9 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const path = require('path');
 
-module.exports = {
+const config = {
     name: 'react-base-ts-webpack',
-    entry: './index.tsx',
-    devtool: 'source-map',
+    entry: './src/index.tsx',
     module: {
         rules: [
             {
@@ -22,7 +21,10 @@ module.exports = {
                 test: /\.(png|jpe?g|gif)$/i,
                 use: [
                     {
-                        loader: 'file-loader'
+                        loader: 'file-loader',
+                        options: {
+                            name: 'images/[name].[ext]'
+                        }
                     }
                 ]
             }
@@ -31,21 +33,15 @@ module.exports = {
     plugins: [
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
-            template: 'index.html'
-        }),
-        new BundleAnalyzerPlugin({ analyzerPort: 8889 })
+            template: './src/index.html'
+        })
     ],
     resolve: {
         extensions: ['.tsx', '.ts', '.js']
     },
     output: {
         filename: '[name].bundle.js',
-        path: path.resolve(__dirname, 'dist')
-    },
-    devServer: {
-        contentBase: path.join(__dirname, 'dist'),
-        compress: true,
-        port: 8888
+        path: path.resolve(__dirname, 'build')
     },
     optimization: {
         splitChunks: {
@@ -58,4 +54,17 @@ module.exports = {
             }
         }
     }
+};
+
+module.exports = (env, argv) => {
+    if (argv.mode === 'development') {
+        config.devServer = {
+            contentBase: path.join(__dirname, 'build'),
+            compress: true,
+            port: 3001
+        };
+        config.devtool = 'source-map';
+        config.plugins.push(new BundleAnalyzerPlugin({ analyzerPort: 8889 }));
+    }
+    return config;
 };
